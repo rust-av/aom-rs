@@ -1,0 +1,18 @@
+[package]
+name = "aom-sys"
+version = "0.1.0"
+authors = ["Luca Barbato <lu_zero@gentoo.org>"]
+license = "MIT"
+description = "FFI bindings to aom"
+repository = "https://github.com/rust-av/aom-rs"
+
+build = "build.rs"
+
+[build-dependencies]
+bindgen = "0.30"
+metadeps = "1.1"
+
+[package.metadata.pkg-config]
+aom = "0.1.0"
+
+[dependencies]
