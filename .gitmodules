@@ -1,0 +1,3 @@
+[submodule "aom-sys/data/aom"]
+	path = aom-sys/data/aom
+	url = https://aomedia.googlesource.com/aom

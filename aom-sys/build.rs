@@ -1,6 +1,9 @@
 extern crate bindgen;
 extern crate metadeps;
 
+#[cfg(feature="build")]
+extern crate cmake;
+
 use std::fs::OpenOptions;
 use std::io::Write;
 
@@ -30,7 +33,36 @@ fn common_builder() -> bindgen::Builder {
         .raw_line("#![allow(non_upper_case_globals)]")
 }
 
+
+#[cfg(feature="build")]
+fn build_sources() {
+    use cmake::Config;
+    use std::env;
+    use std::path::Path;
+    use std::process::Command;
+
+    let build_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
+
+    Command::new("git")
+        .args(&["submodule", "update", "--recommend-shallow", "--init"])
+        .spawn()
+        .expect("Update failed");
+
+    let build_path = Path::new(&build_dir).join("data/aom");
+
+    let cfg = Config::new(build_path).build();
+
+    env::set_var("PKG_CONFIG_PATH", cfg.join("lib/pkgconfig"));
+}
+
+#[cfg(not(feature="build"))]
+fn build_sources() {}
+
 fn main() {
+    if cfg!(feature="build") {
+        build_sources()
+    }
+
     let libs = metadeps::probe().unwrap();
     let headers = libs.get("aom").unwrap().include_paths.clone();
     // let buildver = libs.get("vpx").unwrap().version.split(".").nth(1).unwrap();

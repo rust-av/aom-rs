@@ -8,9 +8,13 @@ repository = "https://github.com/rust-av/aom-rs"
 
 build = "build.rs"
 
+[features]
+build = ["cmake"]
+
 [build-dependencies]
 bindgen = "0.30"
 metadeps = "1.1"
+cmake = { version = "0.1.29", optional = true }
 
 [package.metadata.pkg-config]
 aom = "0.1.0"
