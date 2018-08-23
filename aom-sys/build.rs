@@ -67,7 +67,9 @@ fn main() {
     let headers = libs.get("aom").unwrap().include_paths.clone();
     // let buildver = libs.get("vpx").unwrap().version.split(".").nth(1).unwrap();
 
-    let mut builder = common_builder().header("data/aom.h");
+    let mut builder = common_builder()
+        .header("data/aom.h")
+        .blacklist_type("max_align_t"); // https://github.com/rust-lang-nursery/rust-bindgen/issues/550
 
     for header in headers {
         builder = builder.clang_arg("-I").clang_arg(header.to_str().unwrap());
