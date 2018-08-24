@@ -11,7 +11,7 @@ keywords = ["libaom","av1"]
 [features]
 default = ["codec-trait"]
 codec-trait = ["av-codec"]
-build = ["aom-sys/build"]
+build = ["aom-sys/build_sources"]
 
 [dependencies]
 aom-sys = { version = "0.1.0", path = "aom-sys" }
