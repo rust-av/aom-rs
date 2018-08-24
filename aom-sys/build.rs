@@ -1,13 +1,61 @@
+// build.rs
+
+// extern crate cmake;
+#[cfg(unix)]
 extern crate bindgen;
-extern crate metadeps;
-
-#[cfg(feature="build")]
 extern crate cmake;
+#[cfg(unix)]
+extern crate pkg_config;
 
-use std::fs::OpenOptions;
-use std::io::Write;
+use std::env;
+use std::fs;
+use std::path::Path;
 
-fn format_write(builder: bindgen::Builder, output: &str) {
+fn main() {
+    let cargo_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
+    let build_path = Path::new(&cargo_dir).join("data/aom");
+    let out_dir = &Path::new(&cargo_dir).join("data/aom_build");
+
+    if cfg!(feature = "build_sources") {
+        let debug = if let Some(v) = env::var("PROFILE").ok() {
+            match v.as_str() {
+                "bench" | "release" => false,
+                _ => true,
+            }
+        } else {
+            false
+        };
+
+        let _ = cmake::Config::new(build_path)
+            .define("CONFIG_DEBUG", (debug as u8).to_string())
+            .define("CONFIG_ANALYZER", "0")
+            .define("ENABLE_DOCS", "0")
+            .define("ENABLE_TESTS", "0")
+            .out_dir(out_dir)
+            .no_build_target(cfg!(windows))
+            .build();
+
+        // Dirty hack to force a rebuild whenever the defaults are changed upstream
+        let _ = fs::remove_file(out_dir.join("build/CMakeCache.txt"));
+    }
+
+    env::set_var("PKG_CONFIG_PATH", out_dir.join("lib/pkgconfig"));
+    let _libs = pkg_config::Config::new().statik(true).probe("aom").unwrap();
+
+    use std::io::Write;
+
+    let headers = _libs.include_paths.clone();
+
+    let mut builder = bindgen::builder()
+        .blacklist_type("max_align_t")
+        .rustfmt_bindings(false)
+        .header("data/aom.h");
+
+    for header in headers {
+        builder = builder.clang_arg("-I").clang_arg(header.to_str().unwrap());
+    }
+
+    // Manually fix the comment so rustdoc won't try to pick them
     let s = builder
         .generate()
         .unwrap()
@@ -15,6 +63,9 @@ fn format_write(builder: bindgen::Builder, output: &str) {
         .replace("/**", "/*")
         .replace("/*!", "/*");
 
+    let output = Path::new(&cargo_dir).join("src/aom.rs");
+
+    use std::fs::OpenOptions;
     let mut file = OpenOptions::new()
         .write(true)
         .truncate(true)
@@ -23,58 +74,4 @@ fn format_write(builder: bindgen::Builder, output: &str) {
         .unwrap();
 
     let _ = file.write(s.as_bytes());
-}
-
-fn common_builder() -> bindgen::Builder {
-    bindgen::builder()
-        .raw_line("#![allow(dead_code)]")
-        .raw_line("#![allow(non_camel_case_types)]")
-        .raw_line("#![allow(non_snake_case)]")
-        .raw_line("#![allow(non_upper_case_globals)]")
-}
-
-
-#[cfg(feature="build")]
-fn build_sources() {
-    use cmake::Config;
-    use std::env;
-    use std::path::Path;
-    use std::process::Command;
-
-    let build_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
-
-    Command::new("git")
-        .args(&["submodule", "update", "--recommend-shallow", "--init"])
-        .spawn()
-        .expect("Update failed");
-
-    let build_path = Path::new(&build_dir).join("data/aom");
-
-    let cfg = Config::new(build_path).build();
-
-    env::set_var("PKG_CONFIG_PATH", cfg.join("lib/pkgconfig"));
-}
-
-#[cfg(not(feature="build"))]
-fn build_sources() {}
-
-fn main() {
-    if cfg!(feature="build") {
-        build_sources()
-    }
-
-    let libs = metadeps::probe().unwrap();
-    let headers = libs.get("aom").unwrap().include_paths.clone();
-    // let buildver = libs.get("vpx").unwrap().version.split(".").nth(1).unwrap();
-
-    let mut builder = common_builder()
-        .header("data/aom.h")
-        .blacklist_type("max_align_t"); // https://github.com/rust-lang-nursery/rust-bindgen/issues/550
-
-    for header in headers {
-        builder = builder.clang_arg("-I").clang_arg(header.to_str().unwrap());
-    }
-
-    // Manually fix the comment so rustdoc won't try to pick them
-    format_write(builder, "src/aom.rs");
 }

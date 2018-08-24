@@ -12,11 +12,12 @@ build = "build.rs"
 aom = "0.1.0"
 
 [features]
-build = ["cmake"]
+build_sources = []
 
 [build-dependencies]
 bindgen = "0.38.0"
 metadeps = "1.1.2"
-cmake = { version = "0.1.33", optional = true }
+pkg-config = "0.3.12"
+cmake = "0.1.33"
 
 [dependencies]
