@@ -1,5 +1,7 @@
 // TODO do w/out the unions?
 #![feature(untagged_unions)]
+#[cfg_attr(feature = "cargo-clippy", allow(const_static_lifetime))]
+#[cfg_attr(feature = "cargo-clippy", allow(unreadable_literal))]
 
 pub mod aom;
 
