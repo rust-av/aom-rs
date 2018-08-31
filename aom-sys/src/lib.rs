@@ -4,19 +4,17 @@
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 #![allow(non_upper_case_globals)]
-
 #![feature(untagged_unions)]
 
 #[cfg_attr(feature = "cargo-clippy", allow(const_static_lifetime))]
 #[cfg_attr(feature = "cargo-clippy", allow(unreadable_literal))]
-
 pub mod aom;
 
 #[cfg(test)]
 mod tests {
     use super::aom::*;
-    use std::mem;
     use std::ffi::CStr;
+    use std::mem;
     #[test]
     fn version() {
         println!("{}", unsafe {
@@ -76,13 +74,7 @@ mod tests {
                 flags |= AOM_EFLAG_FORCE_KF;
             }
             unsafe {
-                let ret = aom_codec_encode(
-                    &mut ctx,
-                    &mut raw,
-                    i,
-                    1,
-                    flags as i64,
-                );
+                let ret = aom_codec_encode(&mut ctx, &mut raw, i, 1, flags as i64);
                 if ret != aom_codec_err_t_AOM_CODEC_OK {
                     panic!("Encode failed {:?}", ret);
                 }
