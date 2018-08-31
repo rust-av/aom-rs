@@ -1,7 +1,12 @@
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
-}
+#![feature(rust_2018_preview)]
+#![allow(non_upper_case_globals)]
+
+extern crate aom_sys as ffi;
+extern crate av_data as data;
+
+#[cfg(feature = "codec-trait")]
+extern crate av_codec as codec;
+
+pub mod common;
+pub mod decoder;
+pub mod encoder;
