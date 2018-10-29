@@ -13,7 +13,7 @@ install:
 - mkdir -p libaom
 - cd libaom
 - git clone https://aomedia.googlesource.com/aom
-- cmake ./aom
+- cmake ./aom -DBUILD_SHARED_LIBS=1
 - make
 - sudo make install
 script:
