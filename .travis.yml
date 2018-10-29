@@ -16,6 +16,7 @@ install:
 - cmake ./aom -DBUILD_SHARED_LIBS=1
 - make
 - sudo make install
+- ldconfig
 script:
 - cargo test
 - cargo doc
