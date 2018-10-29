@@ -1,0 +1,21 @@
+language: rust
+rust:
+- nightly
+before_install:
+- wget https://www.nasm.us/pub/nasm/releasebuilds/2.13.03/nasm-2.13.03.tar.xz
+- tar -xvf nasm-2.13.03.tar.xz
+- cd nasm-2.13.03
+- ./configure
+- make
+- sudo make install
+- nasm --version
+install:
+- mkdir -p libaom
+- cd libaom
+- git clone https://aomedia.googlesource.com/aom
+- cmake ./aom
+- make
+- sudo make install
+script:
+- cargo test
+- cargo doc
