@@ -97,6 +97,9 @@ fn map_formaton(img: &mut aom_image, fmt: &Formaton) {
     img.bps = 12;
     img.x_chroma_shift = 1;
     img.y_chroma_shift = 1;
+    img.cp = fmt.get_primaries() as u32;
+    img.tc = fmt.get_xfer() as u32;
+    img.mc = fmt.get_matrix() as u32;
 }
 
 fn img_from_frame(frame: &Frame) -> aom_image {
@@ -291,7 +294,8 @@ mod encoder_trait {
                     .get_encoder()
                     .map(|enc| {
                         self.enc = Some(enc);
-                    }).map_err(|_err| Error::ConfigurationIncomplete)
+                    })
+                    .map_err(|_err| Error::ConfigurationIncomplete)
             } else {
                 unimplemented!()
             }
@@ -338,7 +342,7 @@ mod encoder_trait {
                 ("timebase", Value::Pair(num, den)) => {
                     self.cfg.cfg.g_timebase.num = num as i32;
                     self.cfg.cfg.g_timebase.den = den as i32;
-                },
+                }
                 _ => unimplemented!(),
             }
 
@@ -415,7 +419,8 @@ pub(crate) mod tests {
 
         let mut enc = c.get_encoder().unwrap();
 
-        enc.control(aome_enc_control_id_AOME_SET_CQ_LEVEL, 4).unwrap();
+        enc.control(aome_enc_control_id_AOME_SET_CQ_LEVEL, 4)
+            .unwrap();
 
         enc
     }
