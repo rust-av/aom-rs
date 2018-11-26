@@ -19,6 +19,11 @@ fn frame_from_img(img: aom_image_t) -> Frame {
         aom_img_fmt_AOM_IMG_FMT_I42016 => YUV420,
         ob_fmt => panic!("Received unknown format: {}", ob_fmt),
     };
+
+    f.set_primaries_from_u32(img.cp);
+    f.set_xfer_from_u32(img.tc);
+    f.set_matrix_from_u32(img.mc);
+
     let v = VideoInfo {
         pic_type: PictureType::UNKNOWN,
         width: img.d_w as usize,
@@ -201,7 +206,8 @@ mod decoder_trait {
                 .map(|(mut f, t)| {
                     f.t = t.map(|b| *b).unwrap();
                     Arc::new(f)
-                }).ok_or(Error::MoreDataNeeded)
+                })
+                .ok_or(Error::MoreDataNeeded)
         }
         fn flush(&mut self) -> Result<()> {
             self.flush().map_err(|_err| unimplemented!())
