@@ -2,7 +2,7 @@
 //!
 //!
 
-use crate::ffi::aom::*;
+use crate::ffi::*;
 use std::marker::PhantomData;
 use std::mem::{uninitialized, zeroed};
 use std::os::raw;
@@ -16,7 +16,7 @@ use crate::data::pixel::formats::YUV420;
 
 fn frame_from_img(img: aom_image_t) -> Frame {
     let f = match img.fmt {
-        aom_img_fmt_AOM_IMG_FMT_I42016 => YUV420,
+        aom_img_fmt::AOM_IMG_FMT_I42016 => YUV420,
         ob_fmt => panic!("Received unknown format: {}", ob_fmt),
     };
 
@@ -51,7 +51,7 @@ unsafe impl<T: Send> Send for AV1Decoder<T> {} // TODO: Make sure it cannot be a
 
 impl<T> AV1Decoder<T> {
     /// Create a new decoder
-    pub fn new() -> Result<AV1Decoder<T>, aom_codec_err_t> {
+    pub fn new() -> Result<AV1Decoder<T>, aom_codec_err_t::Type> {
         let mut dec = AV1Decoder {
             ctx: unsafe { uninitialized() },
             iter: ptr::null(),
@@ -69,7 +69,7 @@ impl<T> AV1Decoder<T> {
             )
         };
         match ret {
-            aom_codec_err_t_AOM_CODEC_OK => Ok(dec),
+            aom_codec_err_t::AOM_CODEC_OK => Ok(dec),
             _ => Err(ret),
         }
     }
@@ -85,7 +85,7 @@ impl<T> AV1Decoder<T> {
     /// It matches a call to `aom_codec_decode`.
     ///
     /// [`get_frame`]: #method.get_frame
-    pub fn decode<O>(&mut self, data: &[u8], private: O) -> Result<(), aom_codec_err_t>
+    pub fn decode<O>(&mut self, data: &[u8], private: O) -> Result<(), aom_codec_err_t::Type>
     where
         O: Into<Option<T>>,
     {
@@ -106,7 +106,7 @@ impl<T> AV1Decoder<T> {
         self.iter = ptr::null();
 
         match ret {
-            aom_codec_err_t_AOM_CODEC_OK => Ok(()),
+            aom_codec_err_t::AOM_CODEC_OK => Ok(()),
             _ => {
                 let _ = unsafe { Box::from_raw(priv_data) };
                 Err(ret)
@@ -122,13 +122,13 @@ impl<T> AV1Decoder<T> {
     /// It matches a call to `aom_codec_decode` with NULL arguments.
     ///
     /// [`get_frame`]: #method.get_frame
-    pub fn flush(&mut self) -> Result<(), aom_codec_err_t> {
+    pub fn flush(&mut self) -> Result<(), aom_codec_err_t::Type> {
         let ret = unsafe { aom_codec_decode(&mut self.ctx, ptr::null(), 0, ptr::null_mut()) };
 
         self.iter = ptr::null();
 
         match ret {
-            aom_codec_err_t_AOM_CODEC_OK => Ok(()),
+            aom_codec_err_t::AOM_CODEC_OK => Ok(()),
             _ => Err(ret),
         }
     }

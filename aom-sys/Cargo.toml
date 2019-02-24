@@ -5,7 +5,7 @@ authors = ["Luca Barbato <lu_zero@gentoo.org>"]
 license = "MIT"
 description = "FFI bindings to aom"
 repository = "https://github.com/rust-av/aom-rs"
-
+edition = "2018"
 build = "build.rs"
 
 [package.metadata.pkg-config]
@@ -17,7 +17,5 @@ build_sources = []
 [build-dependencies]
 bindgen = "0.47.2"
 metadeps = "1.1.2"
-pkg-config = "0.3.12"
-cmake = "0.1.33"
 
 [dependencies]

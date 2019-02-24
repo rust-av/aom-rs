@@ -1,14 +1,16 @@
-// TODO do w/out the unions?
-
 #![allow(dead_code)]
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 #![allow(non_upper_case_globals)]
-#![feature(untagged_unions)]
 
 #[cfg_attr(feature = "cargo-clippy", allow(const_static_lifetime))]
 #[cfg_attr(feature = "cargo-clippy", allow(unreadable_literal))]
-pub mod aom;
+
+pub mod aom {
+include!(concat!(env!("OUT_DIR"), "/aom.rs"));
+}
+
+pub use aom::*;
 
 #[cfg(test)]
 mod tests {
@@ -33,7 +35,7 @@ mod tests {
         let mut raw = unsafe { mem::uninitialized() };
         let mut ctx = unsafe { mem::uninitialized() };
 
-        let ret = unsafe { aom_img_alloc(&mut raw, aom_img_fmt_AOM_IMG_FMT_I420, w, h, align) };
+        let ret = unsafe { aom_img_alloc(&mut raw, aom_img_fmt::AOM_IMG_FMT_I420, w, h, align) };
         if ret.is_null() {
             panic!("Image allocation failed");
         }
@@ -43,7 +45,7 @@ mod tests {
         let mut cfg = unsafe { mem::uninitialized() };
         let mut ret = unsafe { aom_codec_enc_config_default(aom_codec_av1_cx(), &mut cfg, 0) };
 
-        if ret != aom_codec_err_t_AOM_CODEC_OK {
+        if ret != aom_codec_err_t::AOM_CODEC_OK {
             panic!("Default Configuration failed");
         }
 
@@ -63,7 +65,7 @@ mod tests {
             )
         };
 
-        if ret != aom_codec_err_t_AOM_CODEC_OK {
+        if ret != aom_codec_err_t::AOM_CODEC_OK {
             panic!("Codec Init failed");
         }
 
@@ -75,7 +77,7 @@ mod tests {
             }
             unsafe {
                 let ret = aom_codec_encode(&mut ctx, &mut raw, i, 1, flags as i64);
-                if ret != aom_codec_err_t_AOM_CODEC_OK {
+                if ret != aom_codec_err_t::AOM_CODEC_OK {
                     panic!("Encode failed {:?}", ret);
                 }
 

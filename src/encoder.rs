@@ -3,7 +3,7 @@
 //!
 
 use crate::common::AOMCodec;
-use crate::ffi::aom::*;
+use crate::ffi::*;
 
 use std::mem;
 use std::ptr;
@@ -42,7 +42,7 @@ fn to_buffer(buf: aom_fixed_buf_t) -> Vec<u8> {
 impl AOMPacket {
     fn new(pkt: aom_codec_cx_pkt) -> AOMPacket {
         match pkt.kind {
-            aom_codec_cx_pkt_kind_AOM_CODEC_CX_FRAME_PKT => {
+            aom_codec_cx_pkt_kind::AOM_CODEC_CX_FRAME_PKT => {
                 let f = unsafe { pkt.data.frame };
                 let mut p = Packet::with_capacity(f.sz);
                 unsafe {
@@ -54,15 +54,15 @@ impl AOMPacket {
 
                 AOMPacket::Packet(p)
             }
-            aom_codec_cx_pkt_kind_AOM_CODEC_STATS_PKT => {
+            aom_codec_cx_pkt_kind::AOM_CODEC_STATS_PKT => {
                 let b = to_buffer(unsafe { pkt.data.twopass_stats });
                 AOMPacket::Stats(b)
             }
-            aom_codec_cx_pkt_kind_AOM_CODEC_FPMB_STATS_PKT => {
+            aom_codec_cx_pkt_kind::AOM_CODEC_FPMB_STATS_PKT => {
                 let b = to_buffer(unsafe { pkt.data.firstpass_mb_stats });
                 AOMPacket::MBStats(b)
             }
-            aom_codec_cx_pkt_kind_AOM_CODEC_PSNR_PKT => {
+            aom_codec_cx_pkt_kind::AOM_CODEC_PSNR_PKT => {
                 let p = unsafe { pkt.data.psnr };
 
                 AOMPacket::PSNR(PSNR {
@@ -71,7 +71,7 @@ impl AOMPacket {
                     psnr: p.psnr,
                 })
             }
-            aom_codec_cx_pkt_kind_AOM_CODEC_CUSTOM_PKT => {
+            aom_codec_cx_pkt_kind::AOM_CODEC_CUSTOM_PKT => {
                 let b = to_buffer(unsafe { pkt.data.raw });
                 AOMPacket::Custom(b)
             }
@@ -89,7 +89,7 @@ unsafe impl Send for AV1EncoderConfig {} // TODO: Make sure it cannot be abused
 // TODO: Extend
 fn map_formaton(img: &mut aom_image, fmt: &Formaton) {
     if fmt == YUV420 {
-        img.fmt = aom_img_fmt_AOM_IMG_FMT_I420;
+        img.fmt = aom_img_fmt::AOM_IMG_FMT_I420;
     } else {
         unimplemented!();
     }
@@ -127,18 +127,18 @@ fn img_from_frame(frame: &Frame) -> aom_image {
 /// AV1 Encoder setup facility
 impl AV1EncoderConfig {
     /// Create a new default configuration
-    pub fn new() -> Result<AV1EncoderConfig, aom_codec_err_t> {
+    pub fn new() -> Result<AV1EncoderConfig, aom_codec_err_t::Type> {
         let mut cfg = unsafe { mem::uninitialized() };
         let ret = unsafe { aom_codec_enc_config_default(aom_codec_av1_cx(), &mut cfg, 0) };
 
         match ret {
-            aom_codec_err_t_AOM_CODEC_OK => Ok(AV1EncoderConfig { cfg }),
+            aom_codec_err_t::AOM_CODEC_OK => Ok(AV1EncoderConfig { cfg }),
             _ => Err(ret),
         }
     }
 
     /// Return a newly allocated `AV1Encoder` using the current configuration
-    pub fn get_encoder(&mut self) -> Result<AV1Encoder, aom_codec_err_t> {
+    pub fn get_encoder(&mut self) -> Result<AV1Encoder, aom_codec_err_t::Type> {
         AV1Encoder::new(self)
     }
 }
@@ -155,7 +155,7 @@ impl AV1Encoder {
     /// Create a new encoder using the provided configuration
     ///
     /// You may use `get_encoder` instead.
-    pub fn new(cfg: &mut AV1EncoderConfig) -> Result<AV1Encoder, aom_codec_err_t> {
+    pub fn new(cfg: &mut AV1EncoderConfig) -> Result<AV1Encoder, aom_codec_err_t::Type> {
         let mut ctx = unsafe { mem::uninitialized() };
         let ret = unsafe {
             aom_codec_enc_init_ver(
@@ -168,7 +168,7 @@ impl AV1Encoder {
         };
 
         match ret {
-            aom_codec_err_t_AOM_CODEC_OK => Ok(AV1Encoder {
+            aom_codec_err_t::AOM_CODEC_OK => Ok(AV1Encoder {
                 ctx,
                 iter: ptr::null(),
             }),
@@ -179,11 +179,11 @@ impl AV1Encoder {
     /// Update the encoder parameters after-creation
     ///
     /// It calls `aom_codec_control_`
-    pub fn control(&mut self, id: aome_enc_control_id, val: i32) -> Result<(), aom_codec_err_t> {
+    pub fn control(&mut self, id: aome_enc_control_id::Type, val: i32) -> Result<(), aom_codec_err_t::Type> {
         let ret = unsafe { aom_codec_control_(&mut self.ctx, id as i32, val) };
 
         match ret {
-            aom_codec_err_t_AOM_CODEC_OK => Ok(()),
+            aom_codec_err_t::AOM_CODEC_OK => Ok(()),
             _ => Err(ret),
         }
     }
@@ -197,7 +197,7 @@ impl AV1Encoder {
     /// It calls `aom_codec_encode`.
     ///
     /// [`get_packet`]: #method.get_packet
-    pub fn encode(&mut self, frame: &Frame) -> Result<(), aom_codec_err_t> {
+    pub fn encode(&mut self, frame: &Frame) -> Result<(), aom_codec_err_t::Type> {
         let img = img_from_frame(frame);
 
         let ret = unsafe { aom_codec_encode(&mut self.ctx, &img, frame.t.pts.unwrap(), 1, 0) };
@@ -205,7 +205,7 @@ impl AV1Encoder {
         self.iter = ptr::null();
 
         match ret {
-            aom_codec_err_t_AOM_CODEC_OK => Ok(()),
+            aom_codec_err_t::AOM_CODEC_OK => Ok(()),
             _ => Err(ret),
         }
     }
@@ -217,13 +217,13 @@ impl AV1Encoder {
     /// It calls `aom_codec_encode` with NULL arguments.
     ///
     /// [`get_packet`]: #method.get_packet
-    pub fn flush(&mut self) -> Result<(), aom_codec_err_t> {
+    pub fn flush(&mut self) -> Result<(), aom_codec_err_t::Type> {
         let ret = unsafe { aom_codec_encode(&mut self.ctx, ptr::null_mut(), 0, 1, 0) };
 
         self.iter = ptr::null();
 
         match ret {
-            aom_codec_err_t_AOM_CODEC_OK => Ok(()),
+            aom_codec_err_t::AOM_CODEC_OK => Ok(()),
             _ => Err(ret),
         }
     }
@@ -414,12 +414,12 @@ pub(crate) mod tests {
         c.cfg.rc_min_quantizer = 0;
         c.cfg.rc_min_quantizer = 0;
         c.cfg.g_threads = 4;
-        c.cfg.g_pass = aom_enc_pass_AOM_RC_ONE_PASS;
-        c.cfg.rc_end_usage = aom_rc_mode_AOM_CQ;
+        c.cfg.g_pass = aom_enc_pass::AOM_RC_ONE_PASS;
+        c.cfg.rc_end_usage = aom_rc_mode::AOM_CQ;
 
         let mut enc = c.get_encoder().unwrap();
 
-        enc.control(aome_enc_control_id_AOME_SET_CQ_LEVEL, 4)
+        enc.control(aome_enc_control_id::AOME_SET_CQ_LEVEL, 4)
             .unwrap();
 
         enc

@@ -8,8 +8,6 @@ It is a simple [binding][1] and safe abstraction over [libaom][2].
 
 By default the bindings are generated using the headers and libraries that ought to be present in the system.
 
-The `build_sources` feature is available to automatically fetch and build [libaom][2].
-
 ## TODO
 - [x] Simple bindings
 - [ ] Safe abstraction
