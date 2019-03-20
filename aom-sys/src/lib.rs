@@ -76,7 +76,7 @@ mod tests {
                 flags |= AOM_EFLAG_FORCE_KF;
             }
             unsafe {
-                let ret = aom_codec_encode(&mut ctx, &mut raw, i, 1, flags as i64);
+                let ret = aom_codec_encode(&mut ctx, &mut raw, i, 1, flags as aom_enc_frame_flags_t);
                 if ret != aom_codec_err_t::AOM_CODEC_OK {
                     panic!("Encode failed {:?}", ret);
                 }
