@@ -184,7 +184,7 @@ mod decoder_trait {
     }
 
     impl Descriptor for Des {
-        fn create(&self) -> Box<Decoder> {
+        fn create(&self) -> Box<dyn Decoder> {
             Box::new(AV1Decoder::new().unwrap())
         }
 
@@ -220,7 +220,7 @@ mod decoder_trait {
     /// AV1 Decoder
     ///
     /// To be used with [av-codec](https://docs.rs/av-codec) `Context`.
-    pub const AV1_DESCR: &Descriptor = &Des {
+    pub const AV1_DESCR: &dyn Descriptor = &Des {
         descr: Descr {
             codec: "av1",
             name: "aom",
