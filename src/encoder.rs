@@ -408,7 +408,7 @@ pub(crate) mod tests {
     use crate::data::timeinfo::TimeInfo;
     pub fn setup(w: u32, h: u32, t: &TimeInfo) -> AV1Encoder {
         let mut c = AV1EncoderConfig::new().unwrap();
-        if w <= 0 || h <= 0 || (w % 2) != 0 || (h % 2) != 0 {
+        if (w % 2) != 0 || (h % 2) != 0 {
             panic!("Invalid frame size: w: {} h: {}", w, h);
         }
         c.cfg.g_w = w;
@@ -496,8 +496,8 @@ pub(crate) mod tests {
         let w = 200;
         let h = 200;
 
-        ctx.set_option("w", w as u64).unwrap();
-        ctx.set_option("h", h as u64).unwrap();
+        ctx.set_option("w", u64::from(w)).unwrap();
+        ctx.set_option("h", u64::from(h)).unwrap();
         ctx.set_option("timebase", (1, 1000)).unwrap();
         ctx.set_option("qmin", 0u64).unwrap();
         ctx.set_option("qmax", 0u64).unwrap();
