@@ -1,4 +1,3 @@
-#![feature(rust_2018_preview)]
 #![allow(non_upper_case_globals)]
 
 extern crate aom_sys as ffi;
