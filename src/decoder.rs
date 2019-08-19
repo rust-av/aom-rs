@@ -274,18 +274,17 @@ mod tests {
             loop {
                 let p = e.get_packet();
 
-                if p.is_none() {
-                    break;
-                } else {
-                    if let AOMPacket::Packet(ref pkt) = p.unwrap() {
-                        let _ = d.decode(&pkt.data, None).unwrap();
+                match p {
+                    Some(AOMPacket::Packet(ref pkt)) => {
+                        d.decode(&pkt.data, None).unwrap();
 
                         // No multiframe expected.
                         if let Some(f) = d.get_frame() {
                             out = 1;
                             println!("{:#?}", f);
                         }
-                    }
+                    },
+                    _ => return break
                 }
             }
         }
