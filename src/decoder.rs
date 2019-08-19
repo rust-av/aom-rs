@@ -294,5 +294,4 @@ mod tests {
             panic!("No frame decoded");
         }
     }
-
 }

@@ -179,7 +179,11 @@ impl AV1Encoder {
     /// Update the encoder parameters after-creation
     ///
     /// It calls `aom_codec_control_`
-    pub fn control(&mut self, id: aome_enc_control_id::Type, val: i32) -> Result<(), aom_codec_err_t::Type> {
+    pub fn control(
+        &mut self,
+        id: aome_enc_control_id::Type,
+        val: i32,
+    ) -> Result<(), aom_codec_err_t::Type> {
         let ret = unsafe { aom_codec_control_(&mut self.ctx, id as i32, val) };
 
         match ret {

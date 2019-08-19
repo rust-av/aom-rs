@@ -7,7 +7,7 @@
 #[cfg_attr(feature = "cargo-clippy", allow(unreadable_literal))]
 
 pub mod aom {
-include!(concat!(env!("OUT_DIR"), "/aom.rs"));
+    include!(concat!(env!("OUT_DIR"), "/aom.rs"));
 }
 
 pub use aom::*;
@@ -76,7 +76,8 @@ mod tests {
                 flags |= AOM_EFLAG_FORCE_KF;
             }
             unsafe {
-                let ret = aom_codec_encode(&mut ctx, &mut raw, i, 1, flags as aom_enc_frame_flags_t);
+                let ret =
+                    aom_codec_encode(&mut ctx, &mut raw, i, 1, flags as aom_enc_frame_flags_t);
                 if ret != aom_codec_err_t::AOM_CODEC_OK {
                     panic!("Encode failed {:?}", ret);
                 }

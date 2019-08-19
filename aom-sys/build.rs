@@ -1,7 +1,7 @@
-use std::path::PathBuf;
-use std::io::Write;
 use std::env;
 use std::fs::File;
+use std::io::Write;
+use std::path::PathBuf;
 
 fn format_write(builder: bindgen::Builder) -> String {
     builder
@@ -16,7 +16,8 @@ fn main() {
     let libs = metadeps::probe().unwrap();
     let headers = libs.get("aom").unwrap().include_paths.clone();
 
-    let mut builder = bindgen::builder().header("data/aom.h")
+    let mut builder = bindgen::builder()
+        .header("data/aom.h")
         .default_enum_style(bindgen::EnumVariation::ModuleConsts);
 
     for header in headers {
@@ -32,5 +33,3 @@ fn main() {
 
     let _ = file.write(s.as_bytes());
 }
-
-
