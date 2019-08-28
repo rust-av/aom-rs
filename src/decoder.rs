@@ -199,7 +199,7 @@ mod decoder_trait {
         }
         fn send_packet(&mut self, pkt: &Packet) -> Result<()> {
             self.decode(&pkt.data, pkt.t.clone())
-                .map_err(|_err| unimplemented!())
+                .map_err(|err| Error::Unsupported(format!("{}", err)))
         }
         fn receive_frame(&mut self) -> Result<ArcFrame> {
             self.get_frame()
@@ -210,7 +210,7 @@ mod decoder_trait {
                 .ok_or(Error::MoreDataNeeded)
         }
         fn flush(&mut self) -> Result<()> {
-            self.flush().map_err(|_err| unimplemented!())
+            self.flush().map_err(|err| Error::Unsupported(format!("{}", err)))
         }
         fn configure(&mut self) -> Result<()> {
             Ok(())
