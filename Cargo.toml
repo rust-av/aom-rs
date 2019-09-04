@@ -22,4 +22,4 @@ av-codec = { version = "0.1.0", optional = true }
 members = ["aom-sys"]
 
 [dev-dependencies]
-regex ="0.2"
+regex ="1.3"
