@@ -1,7 +1,7 @@
 # libaom bindings
 
 [![LICENSE](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Build Status](https://travis-ci.org/rust-av/aom-rs.svg?branch=master)](https://travis-ci.org/rust-av/aom-rs)
+[![Actions Status](https://github.com/rust-av/aom-rs/workflows/aom/badge.svg)](https://github.com/rust-av/aom-rs/actions)
 
 It is a simple [binding][1] and safe abstraction over [libaom][2].
 
