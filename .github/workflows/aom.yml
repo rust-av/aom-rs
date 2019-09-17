@@ -1,0 +1,33 @@
+name: aom
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install nasm
+      run: |
+        sudo apt-get install nasm
+    - name: Install aom
+      run: |
+        git clone --depth 1 https://aomedia.googlesource.com/aom 
+        cd aom
+        mkdir -p build
+        cd build
+        cmake -DCMAKE_INSTALL_PREFIX=$HOME/aom_dir \
+              -DBUILD_SHARED_LIBS=1 \
+              -DENABLE_TESTS=0 \
+              -DENABLE_EXAMPLES=0 \
+              ..
+        make -j12
+        make install
+    - name: Run tests
+      run: |
+        export PKG_CONFIG_PATH=$HOME/aom_dir/lib/pkgconfig:$PKG_CONFIG_PATH
+        export LD_LIBRARY_PATH=$HOME/aom_dir/lib:$LD_LIBRARY_PATH
+        cargo test --all-features --verbose
+        cargo doc --all-features --verbose
