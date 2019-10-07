@@ -284,7 +284,7 @@ mod tests {
                             println!("{:#?}", f);
                         }
                     },
-                    _ => return break
+                    _ => break
                 }
             }
         }
