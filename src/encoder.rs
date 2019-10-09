@@ -5,7 +5,7 @@
 use crate::common::AOMCodec;
 use crate::ffi::*;
 
-use std::mem;
+use std::mem::{self, MaybeUninit};
 use std::ptr;
 
 use crate::data::frame::{Frame, FrameBufferConv, MediaKind};
@@ -128,11 +128,14 @@ fn img_from_frame(frame: &Frame) -> aom_image {
 impl AV1EncoderConfig {
     /// Create a new default configuration
     pub fn new() -> Result<AV1EncoderConfig, aom_codec_err_t::Type> {
-        let mut cfg = unsafe { mem::uninitialized() };
-        let ret = unsafe { aom_codec_enc_config_default(aom_codec_av1_cx(), &mut cfg, 0) };
+        let mut cfg = MaybeUninit::uninit();
+        let ret = unsafe { aom_codec_enc_config_default(aom_codec_av1_cx(), cfg.as_mut_ptr(), 0) };
 
         match ret {
-            aom_codec_err_t::AOM_CODEC_OK => Ok(AV1EncoderConfig { cfg }),
+            aom_codec_err_t::AOM_CODEC_OK => {
+                let cfg = unsafe { cfg.assume_init() };
+                Ok(AV1EncoderConfig { cfg })
+            },
             _ => Err(ret),
         }
     }
@@ -156,10 +159,10 @@ impl AV1Encoder {
     ///
     /// You may use `get_encoder` instead.
     pub fn new(cfg: &mut AV1EncoderConfig) -> Result<AV1Encoder, aom_codec_err_t::Type> {
-        let mut ctx = unsafe { mem::uninitialized() };
+        let mut ctx = MaybeUninit::uninit();
         let ret = unsafe {
             aom_codec_enc_init_ver(
-                &mut ctx,
+                ctx.as_mut_ptr(),
                 aom_codec_av1_cx(),
                 &cfg.cfg,
                 0,
@@ -168,10 +171,13 @@ impl AV1Encoder {
         };
 
         match ret {
-            aom_codec_err_t::AOM_CODEC_OK => Ok(AV1Encoder {
-                ctx,
-                iter: ptr::null(),
-            }),
+            aom_codec_err_t::AOM_CODEC_OK => {
+                let ctx = unsafe { ctx.assume_init() };
+                Ok(AV1Encoder {
+                    ctx,
+                    iter: ptr::null(),
+                })
+            },
             _ => Err(ret),
         }
     }
