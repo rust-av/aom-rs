@@ -4,7 +4,7 @@
 
 use crate::ffi::*;
 use std::marker::PhantomData;
-use std::mem::{uninitialized, zeroed};
+use std::mem::{MaybeUninit, zeroed};
 use std::os::raw;
 use std::ptr;
 use std::sync::Arc;
@@ -52,16 +52,12 @@ unsafe impl<T: Send> Send for AV1Decoder<T> {} // TODO: Make sure it cannot be a
 impl<T> AV1Decoder<T> {
     /// Create a new decoder
     pub fn new() -> Result<AV1Decoder<T>, aom_codec_err_t::Type> {
-        let mut dec = AV1Decoder {
-            ctx: unsafe { uninitialized() },
-            iter: ptr::null(),
-            private_data: PhantomData,
-        };
+        let mut ctx = MaybeUninit::uninit();
         let cfg = unsafe { zeroed() };
 
         let ret = unsafe {
             aom_codec_dec_init_ver(
-                &mut dec.ctx as *mut aom_codec_ctx,
+                ctx.as_mut_ptr(),
                 aom_codec_av1_dx(),
                 &cfg as *const aom_codec_dec_cfg_t,
                 0,
@@ -69,7 +65,14 @@ impl<T> AV1Decoder<T> {
             )
         };
         match ret {
-            aom_codec_err_t::AOM_CODEC_OK => Ok(dec),
+            aom_codec_err_t::AOM_CODEC_OK => {
+                let ctx = unsafe { ctx.assume_init() };
+                Ok(AV1Decoder {
+                    ctx,
+                    iter: ptr::null(),
+                    private_data: PhantomData,
+                })
+            },
             _ => Err(ret),
         }
     }
