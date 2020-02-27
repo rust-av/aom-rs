@@ -8,10 +8,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
+
     - name: Install nasm
+      env:
+        LINK: http://debian-archive.trafficmanager.net/debian/pool/main/n/nasm
+        NASM_VERSION: 2.14.02-1
       run: |
-        sudo apt-get install nasm
+        curl -LO $LINK/nasm_${NASM_VERSION}_amd64.deb
+        sudo dpkg -i nasm_${NASM_VERSION}_amd64.deb
+
+    - name: Install Rust stable
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: stable
+        override: true
+
     - name: Install aom
       run: |
         git clone --depth 1 https://aomedia.googlesource.com/aom 
@@ -25,6 +38,7 @@ jobs:
               ..
         make -j12
         make install
+
     - name: Run tests
       run: |
         export PKG_CONFIG_PATH=$HOME/aom_dir/lib/pkgconfig:$PKG_CONFIG_PATH
