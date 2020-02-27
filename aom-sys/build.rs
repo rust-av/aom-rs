@@ -18,6 +18,7 @@ fn main() {
 
     let mut builder = bindgen::builder()
         .header("data/aom.h")
+        .size_t_is_usize(true)
         .default_enum_style(bindgen::EnumVariation::ModuleConsts);
 
     for header in headers {
