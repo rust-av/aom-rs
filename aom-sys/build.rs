@@ -18,6 +18,7 @@ fn main() {
 
     let mut builder = bindgen::builder()
         .header("data/aom.h")
+        .blacklist_type("max_align_t")
         .size_t_is_usize(true)
         .default_enum_style(bindgen::EnumVariation::ModuleConsts);
 
