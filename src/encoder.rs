@@ -135,7 +135,7 @@ impl AV1EncoderConfig {
             aom_codec_err_t::AOM_CODEC_OK => {
                 let cfg = unsafe { cfg.assume_init() };
                 Ok(AV1EncoderConfig { cfg })
-            },
+            }
             _ => Err(ret),
         }
     }
@@ -177,7 +177,7 @@ impl AV1Encoder {
                     ctx,
                     iter: ptr::null(),
                 })
-            },
+            }
             _ => Err(ret),
         }
     }
@@ -190,7 +190,7 @@ impl AV1Encoder {
         id: aome_enc_control_id::Type,
         val: i32,
     ) -> Result<(), aom_codec_err_t::Type> {
-        let ret = unsafe { aom_codec_control_(&mut self.ctx, id as i32, val) };
+        let ret = unsafe { aom_codec_control(&mut self.ctx, id as i32, val) };
 
         match ret {
             aom_codec_err_t::AOM_CODEC_OK => Ok(()),
