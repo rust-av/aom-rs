@@ -32,22 +32,25 @@ mod tests {
         let h = 360;
         let align = 32;
         let kf_interval = 10;
-        let mut raw = unsafe { mem::uninitialized() };
-        let mut ctx = unsafe { mem::uninitialized() };
+        let mut raw = mem::MaybeUninit::uninit();
+        let mut ctx = mem::MaybeUninit::uninit();
 
-        let ret = unsafe { aom_img_alloc(&mut raw, aom_img_fmt::AOM_IMG_FMT_I420, w, h, align) };
+        let ret = unsafe { aom_img_alloc(raw.as_mut_ptr(), aom_img_fmt::AOM_IMG_FMT_I420, w, h, align) };
         if ret.is_null() {
             panic!("Image allocation failed");
         }
         mem::forget(ret); // raw and ret are the same
+        let mut raw = unsafe { raw.assume_init() };
         print!("{:#?}", raw);
 
-        let mut cfg = unsafe { mem::uninitialized() };
-        let mut ret = unsafe { aom_codec_enc_config_default(aom_codec_av1_cx(), &mut cfg, 0) };
+        let mut cfg = mem::MaybeUninit::uninit();
+        let mut ret = unsafe { aom_codec_enc_config_default(aom_codec_av1_cx(), cfg.as_mut_ptr(), 0) };
 
         if ret != aom_codec_err_t::AOM_CODEC_OK {
             panic!("Default Configuration failed");
         }
+
+        let mut cfg = unsafe { cfg.assume_init() };
 
         cfg.g_w = w;
         cfg.g_h = h;
@@ -57,7 +60,7 @@ mod tests {
 
         ret = unsafe {
             aom_codec_enc_init_ver(
-                &mut ctx,
+                ctx.as_mut_ptr(),
                 aom_codec_av1_cx(),
                 &mut cfg,
                 0,
@@ -68,6 +71,8 @@ mod tests {
         if ret != aom_codec_err_t::AOM_CODEC_OK {
             panic!("Codec Init failed");
         }
+
+        let mut ctx = unsafe { ctx.assume_init() };
 
         let mut out = 0;
         for i in 0..100 {
