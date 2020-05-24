@@ -173,10 +173,16 @@ impl AV1Encoder {
         match ret {
             aom_codec_err_t::AOM_CODEC_OK => {
                 let ctx = unsafe { ctx.assume_init() };
-                Ok(AV1Encoder {
+                let mut enc = AV1Encoder {
                     ctx,
                     iter: ptr::null(),
-                })
+                };
+
+                // Apparently aom 2.0 would crash if a CPUUSED is not set explicitly.
+                enc.control(aome_enc_control_id::AOME_SET_CPUUSED, 2)
+                    .expect("Cannot set CPUUSED");
+
+                Ok(enc)
             }
             _ => Err(ret),
         }
@@ -430,6 +436,8 @@ pub(crate) mod tests {
         let mut enc = c.get_encoder().unwrap();
 
         enc.control(aome_enc_control_id::AOME_SET_CQ_LEVEL, 4)
+            .unwrap();
+        enc.control(aome_enc_control_id::AOME_SET_CPUUSED, 2)
             .unwrap();
 
         enc
