@@ -1,6 +1,6 @@
 [package]
 name = "aom-sys"
-version = "0.1.4"
+version = "0.2.0"
 authors = ["Luca Barbato <lu_zero@gentoo.org>"]
 license = "MIT"
 description = "FFI bindings to aom"
@@ -9,7 +9,7 @@ edition = "2018"
 build = "build.rs"
 
 [package.metadata.pkg-config]
-aom = "0.1.0"
+aom = "0.2.0"
 
 [features]
 build_sources = []
