@@ -35,7 +35,8 @@ mod tests {
         let mut raw = mem::MaybeUninit::uninit();
         let mut ctx = mem::MaybeUninit::uninit();
 
-        let ret = unsafe { aom_img_alloc(raw.as_mut_ptr(), aom_img_fmt::AOM_IMG_FMT_I420, w, h, align) };
+        let ret =
+            unsafe { aom_img_alloc(raw.as_mut_ptr(), aom_img_fmt::AOM_IMG_FMT_I420, w, h, align) };
         if ret.is_null() {
             panic!("Image allocation failed");
         }
@@ -44,7 +45,8 @@ mod tests {
         print!("{:#?}", raw);
 
         let mut cfg = mem::MaybeUninit::uninit();
-        let mut ret = unsafe { aom_codec_enc_config_default(aom_codec_av1_cx(), cfg.as_mut_ptr(), 0) };
+        let mut ret =
+            unsafe { aom_codec_enc_config_default(aom_codec_av1_cx(), cfg.as_mut_ptr(), 0) };
 
         if ret != aom_codec_err_t::AOM_CODEC_OK {
             panic!("Default Configuration failed");
