@@ -8,7 +8,7 @@ repository = "https://github.com/rust-av/aom-rs"
 edition = "2018"
 build = "build.rs"
 
-[package.metadata.pkg-config]
+[package.metadata.system-deps]
 aom = "2.0.0"
 
 [features]
@@ -16,6 +16,6 @@ build_sources = []
 
 [build-dependencies]
 bindgen = "0.54"
-metadeps = "1.1.2"
+system-deps = "1.3"
 
 [dependencies]
