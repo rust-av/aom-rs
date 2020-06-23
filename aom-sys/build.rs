@@ -13,7 +13,7 @@ fn format_write(builder: bindgen::Builder) -> String {
 }
 
 fn main() {
-    let libs = metadeps::probe().unwrap();
+    let libs = system_deps::Config::new().probe().unwrap();
     let headers = libs.get("aom").unwrap().include_paths.clone();
 
     let mut builder = bindgen::builder()
