@@ -10,7 +10,7 @@ use std::ptr;
 use std::sync::Arc;
 
 use crate::common::AOMCodec;
-use crate::data::frame::{new_default_frame, PictureType};
+use crate::data::frame::{new_default_frame, FrameType};
 use crate::data::frame::{Frame, VideoInfo};
 use crate::data::pixel::formats::YUV420;
 
@@ -24,19 +24,25 @@ fn frame_from_img(img: aom_image_t) -> Frame {
     f.set_xfer_from_u32(img.tc);
     f.set_matrix_from_u32(img.mc);
 
-    let v = VideoInfo {
-        pic_type: PictureType::UNKNOWN,
-        width: img.d_w as usize,
-        height: img.d_h as usize,
-        format: Arc::new(*f),
-    };
+    let v = VideoInfo::new(
+        img.d_w as usize,
+        img.d_h as usize,
+        false,
+        FrameType::OTHER,
+        Arc::new(*f),
+    );
 
     let mut f = new_default_frame(v, None);
 
-    let src = img.planes.iter().map(|v| *v as *const u8);
+    let src = img
+        .planes
+        .iter()
+        .zip(img.stride.iter())
+        .map(|(v, l)| unsafe { std::slice::from_raw_parts(*v as *const u8, *l as usize) });
+
     let linesize = img.stride.iter().map(|l| *l as usize);
 
-    f.copy_from_raw_parts(src, linesize);
+    f.copy_from_slice(src, linesize);
     f
 }
 

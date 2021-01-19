@@ -448,12 +448,13 @@ pub(crate) mod tests {
         use crate::data::pixel::formats;
         use std::sync::Arc;
 
-        let v = VideoInfo {
-            pic_type: PictureType::UNKNOWN,
-            width: w as usize,
-            height: h as usize,
-            format: Arc::new(*formats::YUV420),
-        };
+        let v = VideoInfo::new(
+            w as usize,
+            h as usize,
+            false,
+            FrameType::OTHER,
+            Arc::new(*formats::YUV420),
+        );
 
         new_default_frame(v, Some(t.clone()))
     }
