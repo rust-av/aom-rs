@@ -4,7 +4,7 @@
 
 use crate::ffi::*;
 use std::marker::PhantomData;
-use std::mem::{MaybeUninit, zeroed};
+use std::mem::{zeroed, MaybeUninit};
 use std::os::raw;
 use std::ptr;
 use std::sync::Arc;
@@ -72,7 +72,7 @@ impl<T> AV1Decoder<T> {
                     iter: ptr::null(),
                     private_data: PhantomData,
                 })
-            },
+            }
             _ => Err(ret),
         }
     }
@@ -213,7 +213,8 @@ mod decoder_trait {
                 .ok_or(Error::MoreDataNeeded)
         }
         fn flush(&mut self) -> Result<()> {
-            self.flush().map_err(|err| Error::Unsupported(format!("{}", err)))
+            self.flush()
+                .map_err(|err| Error::Unsupported(format!("{}", err)))
         }
         fn configure(&mut self) -> Result<()> {
             Ok(())
@@ -286,8 +287,8 @@ mod tests {
                             out = 1;
                             println!("{:#?}", f);
                         }
-                    },
-                    _ => break
+                    }
+                    _ => break,
                 }
             }
         }
