@@ -1,6 +1,6 @@
 [package]
 name = "aom-sys"
-version = "0.2.1"
+version = "0.2.2"
 authors = ["Luca Barbato <lu_zero@gentoo.org>"]
 license = "MIT"
 description = "FFI bindings to aom"
@@ -15,7 +15,7 @@ aom = "2.0.0"
 build_sources = []
 
 [build-dependencies]
-bindgen = "0.54"
-system-deps = "1.3"
+bindgen = "0.56"
+system-deps = "2.0"
 
 [dependencies]
