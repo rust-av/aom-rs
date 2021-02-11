@@ -16,6 +16,6 @@ build_sources = []
 
 [build-dependencies]
 bindgen = "0.56"
-system-deps = "2.0"
+system-deps = "3.0"
 
 [dependencies]
