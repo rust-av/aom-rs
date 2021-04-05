@@ -15,7 +15,7 @@ aom = "2.0.0"
 build_sources = []
 
 [build-dependencies]
-bindgen = "0.56"
+bindgen = "0.58"
 system-deps = "2.0"
 
 [dependencies]
