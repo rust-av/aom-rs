@@ -14,11 +14,11 @@ fn format_write(builder: bindgen::Builder) -> String {
 
 fn main() {
     let libs = system_deps::Config::new().probe().unwrap();
-    let headers = libs.get("aom").unwrap().include_paths.clone();
+    let headers = libs.all_include_paths();
 
     let mut builder = bindgen::builder()
         .header("data/aom.h")
-        .blacklist_type("max_align_t")
+        .blocklist_type("max_align_t")
         .size_t_is_usize(true)
         .default_enum_style(bindgen::EnumVariation::ModuleConsts);
 
