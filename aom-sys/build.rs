@@ -109,9 +109,6 @@ fn build() -> io::Result<()> {
             "-DCMAKE_INSTALL_PREFIX={}",
             search().to_string_lossy()
         ))
-        .arg("-DCMAKE_INSTALL_LIBDIR=lib")
-        .arg("-DCONFIG_AV1_DECODER=1")
-        .arg("-DCONFIG_AV1_ENCODER=1")
         .arg("-DBUILD_SHARED_LIBS=1")
         .arg("-DENABLE_TESTS=0")
         .arg("-DENABLE_EXAMPLES=0")
