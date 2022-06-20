@@ -4,39 +4,43 @@ on: [push, pull_request]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: Install nasm
-      uses: ilammy/setup-nasm@v1
+      - name: Install nasm
+        uses: ilammy/setup-nasm@v1
 
-    - name: Install Rust stable
-      uses: actions-rs/toolchain@v1
-      with:
-        profile: minimal
-        toolchain: stable
-        override: true
+      - name: Install Rust stable
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
 
-    - name: Install aom
-      run: |
-        git clone --depth 1 https://aomedia.googlesource.com/aom 
-        cd aom
-        mkdir -p build
-        cd build
-        cmake -DCMAKE_INSTALL_PREFIX=$HOME/aom_dir \
-              -DBUILD_SHARED_LIBS=1 \
-              -DENABLE_TESTS=0 \
-              -DENABLE_EXAMPLES=0 \
-              ..
-        make -j12
-        make install
+      - name: Install aom
+        run: |
+          git clone --depth 1 https://aomedia.googlesource.com/aom
+          cd aom
+          mkdir -p build
+          cd build
+          cmake -DCMAKE_INSTALL_PREFIX=$HOME/aom_dir \
+                -DBUILD_SHARED_LIBS=1 \
+                -DENABLE_TESTS=0 \
+                -DENABLE_EXAMPLES=0 \
+                ..
+          make -j12
+          make install
 
-    - name: Run tests
-      run: |
-        export PKG_CONFIG_PATH=$HOME/aom_dir/lib/pkgconfig:$PKG_CONFIG_PATH
-        export LD_LIBRARY_PATH=$HOME/aom_dir/lib:$LD_LIBRARY_PATH
-        cargo test --all-features --verbose
-        cargo doc --all-features --verbose
+      - name: Test against system library
+        run: |
+          export PKG_CONFIG_PATH=$HOME/aom_dir/lib/pkgconfig:$PKG_CONFIG_PATH
+          export LD_LIBRARY_PATH=$HOME/aom_dir/lib:$LD_LIBRARY_PATH
+          RUST_BACKTRACE=1 cargo test --verbose
+          RUST_BACKTRACE=1 cargo doc --verbose
+
+      - name: Test using built sources
+        run: |
+          RUST_BACKTRACE=1 cargo test --all-features --verbose
+          RUST_BACKTRACE=1 cargo doc --all-features --verbose
