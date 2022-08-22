@@ -86,6 +86,20 @@ pub struct AV1EncoderConfig {
 
 unsafe impl Send for AV1EncoderConfig {} // TODO: Make sure it cannot be abused
 
+#[cfg(target_os = "windows")]
+fn map_fmt_to_img(img: &mut aom_image, fmt: &Formaton) {
+    img.cp = fmt.get_primaries() as i32;
+    img.tc = fmt.get_xfer() as i32;
+    img.mc = fmt.get_matrix() as i32;
+}
+
+#[cfg(not(target_os = "windows"))]
+fn map_fmt_to_img(img: &mut aom_image, fmt: &Formaton) {
+    img.cp = fmt.get_primaries() as u32;
+    img.tc = fmt.get_xfer() as u32;
+    img.mc = fmt.get_matrix() as u32;
+}
+
 // TODO: Extend
 fn map_formaton(img: &mut aom_image, fmt: &Formaton) {
     if fmt == YUV420 {
@@ -97,9 +111,7 @@ fn map_formaton(img: &mut aom_image, fmt: &Formaton) {
     img.bps = 12;
     img.x_chroma_shift = 1;
     img.y_chroma_shift = 1;
-    img.cp = fmt.get_primaries() as u32;
-    img.tc = fmt.get_xfer() as u32;
-    img.mc = fmt.get_matrix() as u32;
+    map_fmt_to_img(img, fmt);
 }
 
 fn img_from_frame(frame: &Frame) -> aom_image {

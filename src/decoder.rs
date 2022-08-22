@@ -20,9 +20,9 @@ fn frame_from_img(img: aom_image_t) -> Frame {
         ob_fmt => panic!("Received unknown format: {}", ob_fmt),
     };
 
-    f.set_primaries_from_u32(img.cp);
-    f.set_xfer_from_u32(img.tc);
-    f.set_matrix_from_u32(img.mc);
+    f.set_primaries_from_u32(img.cp as u32);
+    f.set_xfer_from_u32(img.tc as u32);
+    f.set_matrix_from_u32(img.mc as u32);
 
     let v = VideoInfo::new(
         img.d_w as usize,
