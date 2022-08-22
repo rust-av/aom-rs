@@ -3,15 +3,13 @@ name: aom
 on: [push, pull_request]
 
 jobs:
-  build:
 
-    runs-on: ubuntu-latest
+  linux-tests:
+
+    runs-on: ubuntu-22.04
 
     steps:
-    - uses: actions/checkout@v2
-
-    - name: Install nasm
-      uses: ilammy/setup-nasm@v1
+    - uses: actions/checkout@v3
 
     - name: Install Rust stable
       uses: actions-rs/toolchain@v1
@@ -22,21 +20,42 @@ jobs:
 
     - name: Install aom
       run: |
-        git clone --depth 1 https://aomedia.googlesource.com/aom 
-        cd aom
-        mkdir -p build
-        cd build
-        cmake -DCMAKE_INSTALL_PREFIX=$HOME/aom_dir \
-              -DBUILD_SHARED_LIBS=1 \
-              -DENABLE_TESTS=0 \
-              -DENABLE_EXAMPLES=0 \
-              ..
-        make -j12
-        make install
+        sudo apt-get install libaom-dev
 
     - name: Run tests
       run: |
-        export PKG_CONFIG_PATH=$HOME/aom_dir/lib/pkgconfig:$PKG_CONFIG_PATH
-        export LD_LIBRARY_PATH=$HOME/aom_dir/lib:$LD_LIBRARY_PATH
         cargo test --all-features --verbose
+
+    - name: Build docs
+      run: |
         cargo doc --all-features --verbose
+
+  windows-tests-gnu:
+
+    runs-on: windows-latest
+
+    env:
+      MSYSTEM: MINGW64
+      MSYS2_PATH_TYPE: inherit
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Rust Windows gnu
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: stable-x86_64-pc-windows-gnu
+        override: true
+
+    - name: Install msys2 packages
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: MINGW64
+        install: mingw-w64-x86_64-pkgconf mingw-w64-x86_64-aom
+        update: true
+
+    - name: Run tests
+      shell: msys2 {0}
+      run: |
+        cargo test --all-features --verbose
