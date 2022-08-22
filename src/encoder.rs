@@ -324,9 +324,7 @@ mod encoder_trait {
 
         fn send_frame(&mut self, frame: &ArcFrame) -> Result<()> {
             let enc = self.enc.as_mut().unwrap();
-            enc.encode(frame).map_err(|e| match e {
-                _ => unimplemented!(),
-            })
+            enc.encode(frame).map_err(|_| unimplemented!())
         }
 
         fn receive_packet(&mut self) -> Result<Packet> {
@@ -344,9 +342,7 @@ mod encoder_trait {
 
         fn flush(&mut self) -> Result<()> {
             let enc = self.enc.as_mut().unwrap();
-            enc.flush().map_err(|e| match e {
-                _ => unimplemented!(),
-            })
+            enc.flush().map_err(|_| unimplemented!())
         }
 
         fn set_option<'a>(&mut self, key: &str, val: Value<'a>) -> Result<()> {

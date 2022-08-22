@@ -3,9 +3,6 @@
 #![allow(non_snake_case)]
 #![allow(non_upper_case_globals)]
 
-#[cfg_attr(feature = "cargo-clippy", allow(const_static_lifetime))]
-#[cfg_attr(feature = "cargo-clippy", allow(unreadable_literal))]
-
 pub mod aom {
     include!(concat!(env!("OUT_DIR"), "/aom.rs"));
 }
@@ -40,8 +37,9 @@ mod tests {
         if ret.is_null() {
             panic!("Image allocation failed");
         }
-        mem::forget(ret); // raw and ret are the same
-        let mut raw = unsafe { raw.assume_init() };
+        #[allow(clippy::forget_copy)]
+        mem::forget(ret); // raw and ret are the same (ret does not implement Drop trait)
+        let raw = unsafe { raw.assume_init() };
         print!("{:#?}", raw);
 
         let mut cfg = mem::MaybeUninit::uninit();
@@ -64,7 +62,7 @@ mod tests {
             aom_codec_enc_init_ver(
                 ctx.as_mut_ptr(),
                 aom_codec_av1_cx(),
-                &mut cfg,
+                &cfg,
                 0,
                 AOM_ENCODER_ABI_VERSION as i32,
             )
@@ -83,8 +81,7 @@ mod tests {
                 flags |= AOM_EFLAG_FORCE_KF;
             }
             unsafe {
-                let ret =
-                    aom_codec_encode(&mut ctx, &mut raw, i, 1, flags as aom_enc_frame_flags_t);
+                let ret = aom_codec_encode(&mut ctx, &raw, i, 1, flags as aom_enc_frame_flags_t);
                 if ret != aom_codec_err_t::AOM_CODEC_OK {
                     panic!("Encode failed {:?}", ret);
                 }
