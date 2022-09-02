@@ -10,9 +10,8 @@ use std::ptr;
 use std::sync::Arc;
 
 use crate::common::AOMCodec;
-use crate::data::frame::{new_default_frame, FrameType};
-use crate::data::frame::{Frame, VideoInfo};
-use crate::data::pixel::formats::YUV420;
+use av_data::frame::{Frame, FrameBufferCopy, FrameType, VideoInfo};
+use av_data::pixel::formats::YUV420;
 
 fn frame_from_img(img: aom_image_t) -> Frame {
     let f = match img.fmt {
@@ -32,7 +31,7 @@ fn frame_from_img(img: aom_image_t) -> Frame {
         Arc::new(*f),
     );
 
-    let mut f = new_default_frame(v, None);
+    let mut f = Frame::new_default_frame(v, None);
 
     let src = img
         .planes
@@ -54,6 +53,7 @@ pub struct AV1Decoder<T> {
 }
 
 unsafe impl<T: Send> Send for AV1Decoder<T> {} // TODO: Make sure it cannot be abused
+unsafe impl<T: Sync> Sync for AV1Decoder<T> {} // TODO: Make sure it cannot be abused
 
 impl<T> AV1Decoder<T> {
     /// Create a new decoder
@@ -181,20 +181,22 @@ impl<T> AOMCodec for AV1Decoder<T> {
 #[cfg(feature = "codec-trait")]
 mod decoder_trait {
     use super::*;
-    use crate::codec::decoder::*;
-    use crate::codec::error::*;
-    use crate::data::frame::ArcFrame;
-    use crate::data::packet::Packet;
-    use crate::data::timeinfo::TimeInfo;
+    use av_codec::decoder::*;
+    use av_codec::error::*;
+    use av_data::frame::ArcFrame;
+    use av_data::packet::Packet;
+    use av_data::timeinfo::TimeInfo;
     use std::sync::Arc;
 
-    struct Des {
+    pub struct Des {
         descr: Descr,
     }
 
     impl Descriptor for Des {
-        fn create(&self) -> Box<dyn Decoder> {
-            Box::new(AV1Decoder::new().unwrap())
+        type OutputDecoder = AV1Decoder<TimeInfo>;
+
+        fn create(&self) -> Self::OutputDecoder {
+            AV1Decoder::new().unwrap()
         }
 
         fn describe(&self) -> &Descr {
@@ -230,7 +232,7 @@ mod decoder_trait {
     /// AV1 Decoder
     ///
     /// To be used with [av-codec](https://docs.rs/av-codec) `Context`.
-    pub const AV1_DESCR: &dyn Descriptor = &Des {
+    pub const AV1_DESCR: &Des = &Des {
         descr: Descr {
             codec: "av1",
             name: "aom",
@@ -255,8 +257,8 @@ mod tests {
 
     use super::super::encoder::tests as enc;
     use super::super::encoder::AOMPacket;
-    use crate::data::rational::*;
-    use crate::data::timeinfo::TimeInfo;
+    use av_data::rational::*;
+    use av_data::timeinfo::TimeInfo;
     #[test]
     fn decode() {
         let w = 200;

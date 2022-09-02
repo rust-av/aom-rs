@@ -8,10 +8,10 @@ use crate::ffi::*;
 use std::mem::{self, MaybeUninit};
 use std::ptr;
 
-use crate::data::frame::{Frame, FrameBufferConv, MediaKind};
-use crate::data::packet::Packet;
-use crate::data::pixel::formats::YUV420;
-use crate::data::pixel::Formaton;
+use av_data::frame::{Frame, FrameBufferConv, MediaKind};
+use av_data::packet::Packet;
+use av_data::pixel::formats::YUV420;
+use av_data::pixel::Formaton;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct PSNR {
@@ -287,27 +287,29 @@ impl AOMCodec for AV1Encoder {
 #[cfg(feature = "codec-trait")]
 mod encoder_trait {
     use super::*;
-    use crate::codec::encoder::*;
-    use crate::codec::error::*;
-    use crate::data::frame::ArcFrame;
-    use crate::data::params::{CodecParams, MediaKind, VideoInfo};
-    use crate::data::value::Value;
+    use av_codec::encoder::*;
+    use av_codec::error::*;
+    use av_data::frame::ArcFrame;
+    use av_data::params::{CodecParams, MediaKind, VideoInfo};
+    use av_data::value::Value;
 
-    struct Des {
+    pub struct Des {
         descr: Descr,
     }
 
-    struct Enc {
+    pub struct Enc {
         cfg: AV1EncoderConfig,
         enc: Option<AV1Encoder>,
     }
 
     impl Descriptor for Des {
-        fn create(&self) -> Box<dyn Encoder> {
-            Box::new(Enc {
+        type OutputEncoder = Enc;
+
+        fn create(&self) -> Self::OutputEncoder {
+            Enc {
                 cfg: AV1EncoderConfig::new().unwrap(),
                 enc: None,
-            })
+            }
         }
 
         fn describe(&self) -> &Descr {
@@ -401,7 +403,7 @@ mod encoder_trait {
     /// AV1 Encoder
     ///
     /// To be used with [av-codec](https://docs.rs/av-codec) `Encoder Context`.
-    pub const AV1_DESCR: &dyn Descriptor = &Des {
+    pub const AV1_DESCR: &Des = &Des {
         descr: Descr {
             codec: "av1",
             name: "aom",
@@ -424,8 +426,8 @@ pub(crate) mod tests {
         println!("{}", e.error_to_str());
     }
 
-    use crate::data::rational::*;
-    use crate::data::timeinfo::TimeInfo;
+    use av_data::rational::*;
+    use av_data::timeinfo::TimeInfo;
     pub fn setup(w: u32, h: u32, t: &TimeInfo) -> AV1Encoder {
         let mut c = AV1EncoderConfig::new().unwrap();
         if (w % 2) != 0 || (h % 2) != 0 {
@@ -452,8 +454,8 @@ pub(crate) mod tests {
     }
 
     pub fn setup_frame(w: u32, h: u32, t: &TimeInfo) -> Frame {
-        use crate::data::frame::*;
-        use crate::data::pixel::formats;
+        use av_data::frame::*;
+        use av_data::pixel::formats;
         use std::sync::Arc;
 
         let v = VideoInfo::new(
@@ -464,7 +466,7 @@ pub(crate) mod tests {
             Arc::new(*formats::YUV420),
         );
 
-        new_default_frame(v, Some(t.clone()))
+        Frame::new_default_frame(v, Some(t.clone()))
     }
 
     #[test]
@@ -510,8 +512,9 @@ pub(crate) mod tests {
     #[test]
     fn encode_codec_trait() {
         use super::AV1_DESCR;
-        use crate::codec::encoder::*;
-        use crate::codec::error::*;
+        use av_codec::common::CodecList;
+        use av_codec::encoder::*;
+        use av_codec::error::*;
         use std::sync::Arc;
 
         let encoders = Codecs::from_list(&[AV1_DESCR]);
