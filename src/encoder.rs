@@ -2,6 +2,8 @@
 //!
 //!
 
+pub use crate::encoder_config::{AV1EncoderConfig, TileCodingMode};
+
 use crate::common::AOMCodec;
 use crate::ffi::*;
 
@@ -80,12 +82,6 @@ impl AOMPacket {
     }
 }
 
-pub struct AV1EncoderConfig {
-    pub cfg: aom_codec_enc_cfg,
-}
-
-unsafe impl Send for AV1EncoderConfig {} // TODO: Make sure it cannot be abused
-
 #[cfg(target_os = "windows")]
 fn map_fmt_to_img(img: &mut aom_image, fmt: &Formaton) {
     img.cp = fmt.get_primaries() as i32;
@@ -134,30 +130,6 @@ fn img_from_frame(frame: &Frame) -> aom_image {
     img
 }
 
-// TODO: provide a builder?
-
-/// AV1 Encoder setup facility
-impl AV1EncoderConfig {
-    /// Create a new default configuration
-    pub fn new() -> Result<AV1EncoderConfig, aom_codec_err_t::Type> {
-        let mut cfg = MaybeUninit::uninit();
-        let ret = unsafe { aom_codec_enc_config_default(aom_codec_av1_cx(), cfg.as_mut_ptr(), 0) };
-
-        match ret {
-            aom_codec_err_t::AOM_CODEC_OK => {
-                let cfg = unsafe { cfg.assume_init() };
-                Ok(AV1EncoderConfig { cfg })
-            }
-            _ => Err(ret),
-        }
-    }
-
-    /// Return a newly allocated `AV1Encoder` using the current configuration
-    pub fn get_encoder(&mut self) -> Result<AV1Encoder, aom_codec_err_t::Type> {
-        AV1Encoder::new(self)
-    }
-}
-
 /// AV1 Encoder
 pub struct AV1Encoder {
     pub(crate) ctx: aom_codec_ctx_t,
@@ -176,7 +148,7 @@ impl AV1Encoder {
             aom_codec_enc_init_ver(
                 ctx.as_mut_ptr(),
                 aom_codec_av1_cx(),
-                &cfg.cfg,
+                cfg.cfg(),
                 0,
                 AOM_ENCODER_ABI_VERSION as i32,
             )
@@ -361,13 +333,13 @@ mod encoder_trait {
 
         fn set_option<'a>(&mut self, key: &str, val: Value<'a>) -> Result<()> {
             match (key, val) {
-                ("w", Value::U64(v)) => self.cfg.cfg.g_w = v as u32,
-                ("h", Value::U64(v)) => self.cfg.cfg.g_h = v as u32,
-                ("qmin", Value::U64(v)) => self.cfg.cfg.rc_min_quantizer = v as u32,
-                ("qmax", Value::U64(v)) => self.cfg.cfg.rc_max_quantizer = v as u32,
+                ("w", Value::U64(v)) => self.cfg.g_w = v as u32,
+                ("h", Value::U64(v)) => self.cfg.g_h = v as u32,
+                ("qmin", Value::U64(v)) => self.cfg.rc_min_quantizer = v as u32,
+                ("qmax", Value::U64(v)) => self.cfg.rc_max_quantizer = v as u32,
                 ("timebase", Value::Pair(num, den)) => {
-                    self.cfg.cfg.g_timebase.num = num as i32;
-                    self.cfg.cfg.g_timebase.den = den as i32;
+                    self.cfg.g_timebase.num = num as i32;
+                    self.cfg.g_timebase.den = den as i32;
                 }
                 _ => unimplemented!(),
             }
@@ -379,8 +351,8 @@ mod encoder_trait {
             use std::sync::Arc;
             Ok(CodecParams {
                 kind: Some(MediaKind::Video(VideoInfo {
-                    height: self.cfg.cfg.g_h as usize,
-                    width: self.cfg.cfg.g_w as usize,
+                    height: self.cfg.g_h as usize,
+                    width: self.cfg.g_w as usize,
                     format: Some(Arc::new(*YUV420)), // TODO: support more formats
                 })),
                 codec_id: Some("av1".to_owned()),
@@ -393,8 +365,8 @@ mod encoder_trait {
 
         fn set_params(&mut self, params: &CodecParams) -> Result<()> {
             if let Some(MediaKind::Video(ref info)) = params.kind {
-                self.cfg.cfg.g_w = info.width as u32;
-                self.cfg.cfg.g_h = info.height as u32;
+                self.cfg.g_w = info.width as u32;
+                self.cfg.g_h = info.height as u32;
             }
             Ok(())
         }
@@ -429,21 +401,24 @@ pub(crate) mod tests {
     use av_data::rational::*;
     use av_data::timeinfo::TimeInfo;
     pub fn setup(w: u32, h: u32, t: &TimeInfo) -> AV1Encoder {
-        let mut c = AV1EncoderConfig::new().unwrap();
         if (w % 2) != 0 || (h % 2) != 0 {
             panic!("Invalid frame size: w: {} h: {}", w, h);
         }
-        c.cfg.g_w = w;
-        c.cfg.g_h = h;
-        c.cfg.g_timebase.num = *t.timebase.unwrap().numer() as i32;
-        c.cfg.g_timebase.den = *t.timebase.unwrap().denom() as i32;
-        c.cfg.rc_min_quantizer = 0;
-        c.cfg.rc_min_quantizer = 0;
-        c.cfg.g_threads = 4;
-        c.cfg.g_pass = aom_enc_pass::AOM_RC_ONE_PASS;
-        c.cfg.rc_end_usage = aom_rc_mode::AOM_CQ;
+        let mut cfg = AV1EncoderConfig::new()
+            .unwrap()
+            .g_w(w)
+            .g_h(h)
+            .g_timebase_with(|tb| {
+                tb.num = *t.timebase.unwrap().numer() as i32;
+                tb.den = *t.timebase.unwrap().denom() as i32;
+            })
+            .rc_min_quantizer(0)
+            .rc_min_quantizer(0)
+            .g_threads(4)
+            .g_pass(aom_enc_pass::AOM_RC_ONE_PASS)
+            .rc_end_usage(aom_rc_mode::AOM_CQ);
 
-        let mut enc = c.get_encoder().unwrap();
+        let mut enc = cfg.get_encoder().unwrap();
 
         enc.control(aome_enc_control_id::AOME_SET_CQ_LEVEL, 4)
             .unwrap();
