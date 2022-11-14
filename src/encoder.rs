@@ -408,10 +408,7 @@ pub(crate) mod tests {
             .unwrap()
             .g_w(w)
             .g_h(h)
-            .g_timebase_with(|tb| {
-                tb.num = *t.timebase.unwrap().numer() as i32;
-                tb.den = *t.timebase.unwrap().denom() as i32;
-            })
+            .g_timebase(t.timebase.unwrap())
             .rc_min_quantizer(0)
             .rc_min_quantizer(0)
             .g_threads(4)

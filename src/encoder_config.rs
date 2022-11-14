@@ -1,6 +1,8 @@
 use core::mem::MaybeUninit;
 use core::ops::{Deref, DerefMut};
 
+use av_data::rational::Rational64;
+
 use crate::encoder::AV1Encoder;
 use crate::ffi::*;
 
@@ -164,16 +166,9 @@ impl AV1EncoderConfig {
     /// re-encoding video from containers with absolute time timestamps, the
     /// \ref RECOMMENDED method is to set the timebase to that of the parent
     /// container or multimedia framework (ex: 1/1000 for ms, as in FLV).
-    pub fn g_timebase(mut self, val: aom_rational) -> Self {
-        self.cfg.g_timebase = val;
-        self
-    }
-
-    pub fn g_timebase_with<F>(mut self, f: F) -> Self
-    where
-        F: FnOnce(&mut aom_rational),
-    {
-        f(&mut self.cfg.g_timebase);
+    pub fn g_timebase(mut self, val: Rational64) -> Self {
+        self.cfg.g_timebase.num = *val.numer() as i32;
+        self.cfg.g_timebase.den = *val.denom() as i32;
         self
     }
 
