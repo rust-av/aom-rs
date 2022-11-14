@@ -48,7 +48,7 @@ impl AV1EncoderConfig {
     }
 }
 
-/// # Generic settings (g)
+/// # Generic settings
 impl AV1EncoderConfig {
     /// Algorithm specific "usage" value
     ///
@@ -56,7 +56,7 @@ impl AV1EncoderConfig {
     /// intent of how the application intends to use the stream. If this value
     /// is non-zero, consult the documentation for the codec to determine its
     /// meaning.
-    pub fn g_usage(mut self, val: u32) -> Self {
+    pub fn usage(mut self, val: u32) -> Self {
         self.cfg.g_usage = val;
         self
     }
@@ -66,7 +66,7 @@ impl AV1EncoderConfig {
     /// For multi-threaded implementations, use no more than this number of
     /// threads. The codec may use fewer threads than allowed. The value
     /// 0 is equivalent to the value 1.
-    pub fn g_threads(mut self, val: u32) -> Self {
+    pub fn threads(mut self, val: u32) -> Self {
         self.cfg.g_threads = val;
         self
     }
@@ -78,7 +78,7 @@ impl AV1EncoderConfig {
     /// profile to use is determined by the features of the intended decoder.
     /// Consult the documentation for the codec to determine the valid values
     /// for this parameter, or set to zero for a sane default.
-    pub fn g_profile(mut self, val: u32) -> Self {
+    pub fn profile(mut self, val: u32) -> Self {
         self.cfg.g_profile = val;
         self
     }
@@ -89,7 +89,7 @@ impl AV1EncoderConfig {
     /// in pixels. Note that the frames passed as input to the encoder must
     /// have this resolution. Frames will be presented by the decoder in this
     /// resolution, independent of any spatial resampling the encoder may do.
-    pub fn g_w(mut self, val: u32) -> Self {
+    pub fn width(mut self, val: u32) -> Self {
         self.cfg.g_w = val;
         self
     }
@@ -100,7 +100,7 @@ impl AV1EncoderConfig {
     /// in pixels. Note that the frames passed as input to the encoder must
     /// have this resolution. Frames will be presented by the decoder in this
     /// resolution, independent of any spatial resampling the encoder may do.
-    pub fn g_h(mut self, val: u32) -> Self {
+    pub fn height(mut self, val: u32) -> Self {
         self.cfg.g_h = val;
         self
     }
@@ -112,7 +112,7 @@ impl AV1EncoderConfig {
     /// header OBU). If in addition full_still_picture_hdr is 0 (the default),
     /// the encoder will use a reduced header (reduced_still_picture_header is
     /// set to 1 in the sequence header OBU) for the still picture.
-    pub fn g_limit(mut self, val: u32) -> Self {
+    pub fn limit(mut self, val: u32) -> Self {
         self.cfg.g_limit = val;
         self
     }
@@ -121,7 +121,7 @@ impl AV1EncoderConfig {
     ///
     /// If this value is non-zero then it is used to force the maximum frame
     /// width written in write_sequence_header().
-    pub fn g_forced_max_frame_width(mut self, val: u32) -> Self {
+    pub fn forced_max_frame_width(mut self, val: u32) -> Self {
         self.cfg.g_forced_max_frame_width = val;
         self
     }
@@ -130,7 +130,7 @@ impl AV1EncoderConfig {
     ///
     /// If this value is non-zero then it is used to force the maximum frame
     /// height written in write_sequence_header().
-    pub fn g_forced_max_frame_height(mut self, val: u32) -> Self {
+    pub fn forced_max_frame_height(mut self, val: u32) -> Self {
         self.cfg.g_forced_max_frame_height = val;
         self
     }
@@ -140,7 +140,7 @@ impl AV1EncoderConfig {
     /// This value identifies the bit_depth of the codec,
     /// Only certain bit-depths are supported as identified in the
     /// aom_bit_depth_t enum.
-    pub fn g_bit_depth(mut self, val: aom_bit_depth_t) -> Self {
+    pub fn bit_depth(mut self, val: aom_bit_depth_t) -> Self {
         self.cfg.g_bit_depth = val;
         self
     }
@@ -150,7 +150,7 @@ impl AV1EncoderConfig {
     /// This value identifies the bit_depth of the input frames in bits.
     /// Note that the frames passed as input to the encoder must have
     /// this bit-depth.
-    pub fn g_input_bit_depth(mut self, val: u32) -> Self {
+    pub fn input_bit_depth(mut self, val: u32) -> Self {
         self.cfg.g_input_bit_depth = val;
         self
     }
@@ -166,7 +166,7 @@ impl AV1EncoderConfig {
     /// re-encoding video from containers with absolute time timestamps, the
     /// \ref RECOMMENDED method is to set the timebase to that of the parent
     /// container or multimedia framework (ex: 1/1000 for ms, as in FLV).
-    pub fn g_timebase(mut self, val: Rational64) -> Self {
+    pub fn timebase(mut self, val: Rational64) -> Self {
         self.cfg.g_timebase.num = *val.numer() as i32;
         self.cfg.g_timebase.den = *val.denom() as i32;
         self
@@ -177,7 +177,7 @@ impl AV1EncoderConfig {
     /// The error resilient bitfield indicates to the encoder which features
     /// it should enable to take measures for streaming over lossy or noisy
     /// links.
-    pub fn g_error_resilient(mut self, val: aom_codec_er_flags_t) -> Self {
+    pub fn error_resilient(mut self, val: aom_codec_er_flags_t) -> Self {
         self.cfg.g_error_resilient = val;
         self
     }
@@ -186,7 +186,7 @@ impl AV1EncoderConfig {
     ///
     /// This value should be set to the current phase for multi-pass encoding.
     /// For single pass, set to #AOM_RC_ONE_PASS.
-    pub fn g_pass(mut self, val: aom::aom_enc_pass::Type) -> Self {
+    pub fn pass(mut self, val: aom::aom_enc_pass::Type) -> Self {
         self.cfg.g_pass = val;
         self
     }
@@ -202,7 +202,7 @@ impl AV1EncoderConfig {
     /// Note that this is a maximum value -- the encoder may produce frames
     /// sooner than the given limit. Set this value to 0 to disable this
     /// feature.
-    pub fn g_lag_in_frames(mut self, val: u32) -> Self {
+    pub fn lag_in_frames(mut self, val: u32) -> Self {
         self.cfg.g_lag_in_frames = val;
         self
     }

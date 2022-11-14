@@ -406,13 +406,13 @@ pub(crate) mod tests {
         }
         let mut cfg = AV1EncoderConfig::new()
             .unwrap()
-            .g_w(w)
-            .g_h(h)
-            .g_timebase(t.timebase.unwrap())
+            .width(w)
+            .height(h)
+            .timebase(t.timebase.unwrap())
             .rc_min_quantizer(0)
             .rc_min_quantizer(0)
-            .g_threads(4)
-            .g_pass(aom_enc_pass::AOM_RC_ONE_PASS)
+            .threads(4)
+            .pass(aom_enc_pass::AOM_RC_ONE_PASS)
             .rc_end_usage(aom_rc_mode::AOM_CQ);
 
         let mut enc = cfg.get_encoder().unwrap();
