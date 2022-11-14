@@ -12,11 +12,9 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Install Rust stable
-      uses: actions-rs/toolchain@v1
+      uses: dtolnay/rust-toolchain@stable
       with:
-        profile: minimal
         toolchain: stable
-        override: true
 
     - name: Install aom
       run: |
@@ -42,11 +40,9 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Install Rust Windows gnu
-      uses: actions-rs/toolchain@v1
+      uses: dtolnay/rust-toolchain@stable
       with:
-        profile: minimal
-        toolchain: stable-x86_64-pc-windows-gnu
-        override: true
+        toolchain: stable-gnu
 
     - name: Install msys2 packages
       uses: msys2/setup-msys2@v2
