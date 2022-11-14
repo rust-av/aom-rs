@@ -1,3 +1,5 @@
+#![deny(missing_docs)]
+
 use core::mem::MaybeUninit;
 use core::ops::{Deref, DerefMut};
 
@@ -72,14 +74,8 @@ impl AV1EncoderConfig {
     }
 
     /// Bitstream profile to use
-    ///
-    /// Some codecs support a notion of multiple bitstream profiles. Typically
-    /// this maps to a set of features that are turned on or off. Often the
-    /// profile to use is determined by the features of the intended decoder.
-    /// Consult the documentation for the codec to determine the valid values
-    /// for this parameter, or set to zero for a sane default.
-    pub fn profile(mut self, val: u32) -> Self {
-        self.cfg.g_profile = val;
+    pub fn profile(mut self, val: BitstreamProfile) -> Self {
+        self.cfg.g_profile = val as u32;
         self
     }
 
@@ -637,6 +633,7 @@ impl AV1EncoderConfig {
         self
     }
 
+    /// DO NOT USE.
     #[deprecated(since = "0.3.1", note = "DO NOT USE. To be removed in libaom v4.0.0")]
     pub fn fixed_qp_offsets(mut self, val: [i32; 5]) -> Self {
         self.cfg.fixed_qp_offsets = val;
@@ -671,4 +668,20 @@ pub enum TileCodingMode {
     Normal = 0,
     /// Large-scale tile coding
     LargeScale = 1,
+}
+
+/// Bitstream profile
+#[derive(Default)]
+#[repr(u32)]
+pub enum BitstreamProfile {
+    /// - 8-bit and 10-bit `4:2:0` and `4:0:0` only
+    #[default]
+    Profile0 = 0,
+
+    /// - 8-bit and 10-bit `4:4:4`
+    Profile1 = 1,
+
+    /// - 8-bit and 10-bit `4:2:2`
+    /// - 12-bit `4:0:0`, `4:2:2` and `4:4:4`
+    Profile2 = 2,
 }
