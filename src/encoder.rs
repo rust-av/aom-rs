@@ -2,7 +2,7 @@
 //!
 //!
 
-pub use crate::encoder_config::{AV1EncoderConfig, TileCodingMode};
+pub use crate::encoder_config::{AV1EncoderConfig, BitstreamProfile, TileCodingMode};
 
 use crate::common::AOMCodec;
 use crate::ffi::*;
