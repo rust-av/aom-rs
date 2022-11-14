@@ -5,9 +5,7 @@ on: [push, pull_request]
 jobs:
 
   linux-tests:
-
     runs-on: ubuntu-22.04
-
     steps:
     - uses: actions/checkout@v3
 
@@ -29,9 +27,7 @@ jobs:
         cargo doc --all-features --verbose
 
   windows-tests-gnu:
-
     runs-on: windows-latest
-
     env:
       MSYSTEM: MINGW64
       MSYS2_PATH_TYPE: inherit
@@ -54,4 +50,4 @@ jobs:
     - name: Run tests
       shell: msys2 {0}
       run: |
-        cargo test --all-features --verbose
+        RUSTFLAGS="-L/mingw64/lib" cargo test --all-features --verbose
