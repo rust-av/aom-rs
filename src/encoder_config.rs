@@ -14,16 +14,31 @@ use crate::ffi::*;
 /// across all codecs. This doesn't imply that all codecs support all features,
 /// however.
 pub struct AV1EncoderConfig {
-    cfg: aom_codec_enc_cfg,
+    /// Public for backwards compatibility
+    ///
+    /// Prefer using [`Deref`].
+    ///
+    /// i.e. `*config` instead of `config.cfg`,
+    /// or `config.g_usage` instead of `config.cfg.g_usage`.
+    pub cfg: aom_codec_enc_cfg,
 }
 
 unsafe impl Send for AV1EncoderConfig {} // TODO: Make sure it cannot be abused
 
 impl AV1EncoderConfig {
-    /// Create a new default configuration
+    /// Create a new default configuration with default usage
     pub fn new() -> Result<AV1EncoderConfig, aom_codec_err_t::Type> {
+        Self::new_with_usage(AomUsage::default())
+    }
+
+    /// Create a new default configuration with a particular usage
+    ///
+    /// For example, running in [`AomUsage::RealTime`] mode
+    pub fn new_with_usage(usage: AomUsage) -> Result<AV1EncoderConfig, aom_codec_err_t::Type> {
         let mut cfg = MaybeUninit::uninit();
-        let ret = unsafe { aom_codec_enc_config_default(aom_codec_av1_cx(), cfg.as_mut_ptr(), 0) };
+        let ret = unsafe {
+            aom_codec_enc_config_default(aom_codec_av1_cx(), cfg.as_mut_ptr(), usage as u32)
+        };
 
         match ret {
             aom_codec_err_t::AOM_CODEC_OK => {
@@ -52,14 +67,11 @@ impl AV1EncoderConfig {
 
 /// # Generic settings
 impl AV1EncoderConfig {
-    /// Algorithm specific "usage" value
+    /// Usage setting to pass into AOM.
     ///
-    /// Algorithms may define multiple values for usage, which may convey the
-    /// intent of how the application intends to use the stream. If this value
-    /// is non-zero, consult the documentation for the codec to determine its
-    /// meaning.
-    pub fn usage(mut self, val: u32) -> Self {
-        self.cfg.g_usage = val;
+    /// Prefer setting this with [`AV1EncoderConfig::new_with_usage`].
+    pub fn usage(mut self, val: AomUsage) -> Self {
+        self.cfg.g_usage = val as u32;
         self
     }
 
@@ -661,17 +673,37 @@ impl DerefMut for AV1EncoderConfig {
     }
 }
 
+/// Algorithm specific usage type
+///
+/// In this case, AV1 usage types.
+#[derive(Default, Clone, Copy, Debug)]
+#[repr(u32)]
+pub enum AomUsage {
+    /// [`AOM_USAGE_GOOD_QUALITY`]
+    #[default]
+    GoodQuality = 0,
+
+    /// [`AOM_USAGE_REALTIME`]
+    RealTime = 1,
+
+    /// [`AOM_USAGE_ALL_INTRA`]
+    AllIntra = 2,
+}
+
 /// Tile coding mode
+#[derive(Default, Clone, Copy, Debug)]
 #[repr(u32)]
 pub enum TileCodingMode {
     /// Normal non-large-scale tile coding
+    #[default]
     Normal = 0,
+
     /// Large-scale tile coding
     LargeScale = 1,
 }
 
 /// Bitstream profile
-#[derive(Default)]
+#[derive(Default, Clone, Copy, Debug)]
 #[repr(u32)]
 pub enum BitstreamProfile {
     /// - 8-bit and 10-bit `4:2:0` and `4:0:0` only
