@@ -42,5 +42,5 @@ steps above.
 - [ ] Safe abstraction
 - [ ] Examples
 
-[1]: https://github.com/rust-lang-nursery/rust-bindgen
+[1]: https://github.com/rust-lang/rust-bindgen
 [2]: https://aomedia.googlesource.com/aom

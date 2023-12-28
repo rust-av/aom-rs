@@ -7,6 +7,7 @@ description = "FFI bindings to aom"
 repository = "https://github.com/rust-av/aom-rs"
 edition = "2021"
 build = "build.rs"
+readme = "../README.md"
 
 [package.metadata.system-deps]
 aom = "3.0.0"
